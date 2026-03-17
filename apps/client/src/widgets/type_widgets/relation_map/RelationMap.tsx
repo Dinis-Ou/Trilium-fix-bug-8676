@@ -422,12 +422,9 @@ function useRelationCreation({ mapApiRef, jsPlumbApiRef }: { mapApiRef: RefObjec
                     return;
                 }
 
-                $answer.on("keyup", () => {
-                    // invalid characters are simply ignored (from user perspective they are not even entered)
-                    const attrName = utils.filterAttributeName($answer.val() as string);
+                setupImeAwareInput($answer as JQuery<HTMLInputElement>); 
+                
 
-                    $answer.val(attrName);
-                });
 
                 attribute_autocomplete.initAttributeNameAutocomplete({
                     $el: $answer,
@@ -453,4 +450,21 @@ function useRelationCreation({ mapApiRef, jsPlumbApiRef }: { mapApiRef: RefObjec
     }, []);
 
     return connectionCallback;
+}
+export function setupImeAwareInput($answer: JQuery<HTMLInputElement>) {
+    let isComposing = false;
+
+    $answer.on("compositionstart", () => {
+        isComposing = true;
+    });
+    $answer.on("compositionend", () => {
+        isComposing = false;
+        const attrName = utils.filterAttributeName($answer.val() as string);
+        $answer.val(attrName);
+    });
+    $answer.on("input", () => {
+        if (isComposing) return;
+        const attrName = utils.filterAttributeName($answer.val() as string);
+        $answer.val(attrName);
+    });
 }
